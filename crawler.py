@@ -1,18 +1,12 @@
-#this is a dynamically-generated webpage, ie using JS. have to scrape with selenium instead of beautifulSoup.
 #extract the slides and the audio [x]
 #calculate durations [x]
-#problem of missing last duration value.
-#a timestamp is when the image appears. so, if you wanted the duration of the last image appearing, you'd need the timestamp of the end of the video. (54:46)
-#solution: find total length of the lecture, add that to the list of timestamps, and then you can calculate the desired 24 durations
-#create a new mp4[x] using FFmpeg?
+#create a new mp4[x] using FFmpeg
 
 
 import os
 import subprocess #needed to run ffmpeg commands
-import glob
 import urllib.request
 from selenium import webdriver
-from moviepy.editor import *
 import time
 from datetime import timedelta
 
@@ -62,21 +56,12 @@ def getBongoPlayerFromURL():
     mp4_to_mp3(mp4_url) #LINE TO ENABLE MP3 DOWNLOAD
     return total_vid_length
 
-#convert to mp3
+#convert mp4 to mp3
 def mp4_to_mp3(url):
-    #use the url, download as input.mp4
-    urllib.request.urlretrieve(url, "input.mp4")
-    # time.sleep(5)
+    cmd = "ffmpeg -i " + url + " -vn audio.mp3"
+    subprocess.call(cmd,shell=True)
 
-    #do the conversion
-    videoClip = VideoFileClip("input.mp4")
-    audioClip = videoClip.audio
-    audioClip.write_audiofile("audio.mp3")
-    audioClip.close()
-    videoClip.close()
 
-    #delete the mp4, if it exists.
-    deleteFileNameIfExists("input.mp4")
 
 def deleteFileNameIfExists(fileName):
     if os.path.exists(fileName):
@@ -86,9 +71,8 @@ def deleteFileNameIfExists(fileName):
 def extractSlides(thumbnailsContainer):
 
     for thumb in thumbnailsContainer.find_elements_by_class_name("c-bbb-player__thumbnail"):
-        #---IMG
-        imgtag = thumb.find_element_by_class_name("c-bbb-player__thumbnail-image")
-        img_url_list.append(imgtag.get_attribute("src"))
+        #---IMG 
+        img_url_list.append(thumb.find_element_by_class_name("c-bbb-player__thumbnail-image").get_attribute("src"))
 
         #---TIMESTAMP
         time_Ptag = thumb.find_element_by_class_name("c-bbb-player__thumbnail-time")
@@ -122,15 +106,15 @@ def create_demuxer_txt(total_vid_length):
 
     f = open("demuxerfile.txt", "w")
 
-    #due to a quirk in ffmpeg, the last image file path needs to be written twice in the txt,
-    #store the last image file path in this variable
+    #due to a quirk in ffmpeg, the last_img_url will need to be written twice in the txt,
     last_img_url = img_url_list[-1]
 
     for i, (duration, img_url) in enumerate(zip(durations_list, img_url_list)):
         #this is the order to write to the text file...each f.write is one line.
         f.write("file " + "'" + img_url + "'" + "\n")
         f.write("duration " + str(duration) + "\n")
-        if i == (len(img_url_list) - 1): #you have reached the last index. b/c .py indicing starts at zero, the last index is one less than the element count.
+
+        if i == (len(img_url_list) - 1): #if at last index, write last_img_url again.
             f.write("file " + "'" + last_img_url + "'")
 
     
