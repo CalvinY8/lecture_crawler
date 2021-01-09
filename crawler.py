@@ -5,15 +5,13 @@
 
 import os
 import subprocess #needed to run ffmpeg commands
-import urllib.request
 from selenium import webdriver
 import time
-from datetime import timedelta
 
 #use the driver to remove the playerDiv from the html from the url.
 def getPlayerDivFromURL(driver, url):
     driver.get(url)
-    time.sleep(15) #wait for page to load
+    time.sleep(18) #wait for page to load
 
     #isolate the player
     bongo_main = driver.find_element_by_class_name("bongo-main")
@@ -50,6 +48,7 @@ def deleteFileNameIfExists(fileName):
 
 #identify the slides in the slideshow, given playerDiv
 #for each slide, append img_url and timestamp to their respective lists.
+#return tuple containing both lists
 def get_slides_data(playerDiv, driver):
     timeStamp_list = []
     img_url_list = []
@@ -72,22 +71,21 @@ def get_slides_data(playerDiv, driver):
 #returns list of durations in seconds
 def hms_to_seconds(t):
     h,m,s = t.split(':')
-    secs = int(timedelta(hours=int(h),minutes=int(m),seconds=int(s)).total_seconds())
-    return secs
+    return (int(h)*3600 + int(m)*60 + int(s))
 
 #takes list of timestamps of format "HH:MM:SS"
 #appends total_vid_length to list
 #calculates list of durations for each image to appear in lecture.mp4
 def timestamps_to_durations(timeStamp_list):
     durations = []
-    frmat = '%H:%M:%S' #input format
     timeStamp_list.append(total_vid_length)
     #add the total vid length as the last timestamp. this is to calculate duration for the last image requires both the timestamp the image appears, and timestamp image is ended
 
     for i in range(1, len(timeStamp_list)):
-        final  = hms_to_seconds(timeStamp_list[i])
-        initial = hms_to_seconds(timeStamp_list[i-1])
-        durations.append(int((final - initial)))         #get the difference in seconds
+        # final  = hms_to_seconds(timeStamp_list[i])
+        # initial = hms_to_seconds(timeStamp_list[i-1])
+        # durations.append(final - initial)         #get the difference in seconds
+        durations.append(hms_to_seconds(timeStamp_list[i]) - hms_to_seconds(timeStamp_list[i-1]))
     return durations
 
 
@@ -112,9 +110,7 @@ def create_demuxer_txt(total_vid_length, slidesData_tuple):
         f.write("file " + "'" + img_url + "'" + "\n")
         f.write("duration " + str(duration) + "\n")
 
-        if i == (len(img_url_list) - 1): #if at last index, write last_img_url again.
-            f.write("file " + "'" + last_img_url + "'")
-
+    f.write("file " + "'" + last_img_url + "'") #write last img url again.
     
     f.close()
 
@@ -179,6 +175,7 @@ if __name__ == '__main__':
     #download the mp4_url to file called "audio.mp3"
     mp4_to_mp3(mp4_url)
     create_demuxer_txt(total_vid_length, slidesData_tuple) #create demuxer txt for ffmpeg to use
+
     create_lecture_mp4()
 
 
