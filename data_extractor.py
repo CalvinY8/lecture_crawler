@@ -77,7 +77,7 @@ class data_extractor:
 def main():
 
     #data_extractor: processes the url into the playerDiv, extracts data from divs
-    #data_processor: cleans up previous files from previous runs, converts mp4 to mp4, creates demuxer_txt, creates the lecture
+    #data_processor: cleans up previous files from previous runs, converts mp4 to mp3, creates demuxer_txt, creates the lecture
 
     start_time = time.time()
 
