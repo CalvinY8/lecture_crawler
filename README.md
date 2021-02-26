@@ -7,4 +7,4 @@ in the mp4, the slides remain synchronized with the audio.
 you can then open the mp4 and watch it at a faster speed.
 
 demo:
-https://www.youtube.com/watch?v=Hy1K2yyfoE4
+https://youtu.be/jPLajhgITII
