@@ -1,6 +1,6 @@
 # lecture_crawler
-demo: https://youtu.be/-WYmPq7P0NA <br/>
 Play recorded bongo lectures faster. <br/>
+demo: https://youtu.be/-WYmPq7P0NA <br/>
 
 //place recorded_bongo_lecture_URL on line 93 of data_extractor.py
 
